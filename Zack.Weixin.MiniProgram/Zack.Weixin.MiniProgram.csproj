@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/yangzhongke/Zack.Weixin.MiniProgram</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yangzhongke/Zack.Weixin.MiniProgram</RepositoryUrl>
+    <Description>微信小程序服务器端API的.NET版，.NET Standard 2.0。只是对微信小程序接口的封装，所以不像Senparc那么复杂
+
+</Description>
   </PropertyGroup>
 
   <ItemGroup>
