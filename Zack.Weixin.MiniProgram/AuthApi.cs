@@ -24,6 +24,13 @@ namespace Zack.Weixin.MiniProgram
             return json.Deserialize< GetAccessTokenResult>();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="appid"></param>
+        /// <param name="secret"></param>
+        /// <param name="js_code"></param>
+        /// <returns></returns>
         //https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/login/auth.code2Session.html
         public async Task<Code2SessionResult> Code2SessionAsync(string appid,string secret,string js_code)
         {
@@ -34,7 +41,19 @@ namespace Zack.Weixin.MiniProgram
             return json.Deserialize<Code2SessionResult>();
         }
 
-        public static string DecodeUserInfo(string encryptedData, string iv, string code,
+        public async Task<UserInfo> GetUserInfoAsync(string appid, string secret, string js_code, string encryptedData, string iv)
+        {
+            var sessionResult = await Code2SessionAsync(appid, secret, js_code);
+            if(sessionResult.Errcode!=0)
+            {
+                throw new ApplicationException($"Code2Session Error,Errcode={sessionResult.Errcode},ErrMsg={sessionResult.Errmsg}");
+            }
+            string sessionKey = sessionResult.Session_Key;
+            string userInfoJson = DecodeUserInfoAsString(encryptedData, iv, sessionKey);
+            return userInfoJson.Deserialize<UserInfo>();
+        }
+
+        public static string DecodeUserInfoAsString(string encryptedData, string iv,
             string session_key)
         {
             byte[] iv2 = Convert.FromBase64String(iv);
@@ -44,18 +63,21 @@ namespace Zack.Weixin.MiniProgram
                 throw new ArgumentNullException(nameof(encryptedData));
             }
             byte[] toEncryptArray = Convert.FromBase64String(encryptedData);
+            
 
-            System.Security.Cryptography.RijndaelManaged rm = new System.Security.Cryptography.RijndaelManaged
+            var rm = new System.Security.Cryptography.RijndaelManaged
             {
                 Key = Convert.FromBase64String(session_key),
                 IV = iv2,
                 Mode = System.Security.Cryptography.CipherMode.CBC,
                 Padding = System.Security.Cryptography.PaddingMode.PKCS7
             };
-
-           var cTransform = rm.CreateDecryptor();
-            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
-
+            byte[] resultArray;
+            using (rm)
+            {
+                var cTransform = rm.CreateDecryptor();
+                resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+            }
             return Encoding.UTF8.GetString(resultArray);
         }
     }

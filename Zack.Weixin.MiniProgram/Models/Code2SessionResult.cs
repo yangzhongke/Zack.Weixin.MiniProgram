@@ -2,6 +2,9 @@
 {
     public class Code2SessionResult:BaseResult
     {
+        /// <summary>
+        /// 尽量不要直接调用这个接口里OpenId，因为
+        /// </summary>
         public string OpenId { get; set; }
         public string Session_Key { get; set; }
         /// <summary>
